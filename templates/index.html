@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Bus Tracking System</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+<header>
+ <div class="logo">🚌 Student <span>Bus Tracking</span></div>
+ <nav>
+  <button class="active" data-page="home">Home</button>
+  <button data-page="routes">Bus Routes</button>
+  <button data-page="tracking">Track Bus</button>
+ </nav>
+</header>
+
+<main>
+<section id="home" class="page active">
+ <div class="glass hero">
+  <h1>Student Bus Tracking System</h1>
+  <p>Explore college bus routes, check timings and follow each bus along its own route until it reaches College.</p>
+  <div class="actions">
+   <button class="button" data-go="routes">View Bus Routes</button>
+   <button class="button yellow" data-go="tracking">Track Bus</button>
+  </div>
+ </div>
+
+ <div class="cards">
+  <div class="card"><div class="icon">🚌</div><h3>Bus Routes</h3><p>Explore all 21 college bus routes and stops.</p><button class="button" data-go="routes">Explore Routes</button></div>
+  <div class="card"><div class="icon">🔎</div><h3>Search</h3><p>Search by bus number, starting point or stop.</p><button class="button" data-go="routes">Search Routes</button></div>
+  <div class="card"><div class="icon">📍</div><h3>Tracking</h3><p>Watch the bus move slowly from stop to stop.</p><button class="button" data-go="tracking">Track Bus</button></div>
+ </div>
+</section>
+
+<section id="routes" class="page">
+ <div class="glass">
+  <h2>College Bus Routes</h2>
+  <p>Search by bus number, starting point or stop name.</p>
+
+  <div class="search-area">
+   <input id="routeSearch" placeholder="Search bus or place..." autocomplete="off">
+   <select id="timeFilter">
+    <option value="all">All Departure Times</option>
+    <option value="early">Before 7:45 AM</option>
+    <option value="middle">7:45 AM to 8:00 AM</option>
+    <option value="late">After 8:00 AM</option>
+   </select>
+  </div>
+
+  <p id="routeCount" style="font-weight:bold;margin-bottom:14px"></p>
+  <div id="routeList" class="route-list"></div>
+ </div>
+</section>
+
+<section id="tracking" class="page">
+ <div class="glass">
+  <h2>Bus Tracking</h2>
+  <p>Select a bus to display its road, buildings and all listed stops.</p>
+
+  <div class="tracking-select">
+   <label for="trackingBus">Select Bus Number</label>
+   <select id="trackingBus"><option value="">-- Select a Bus --</option></select>
+  </div>
+
+  <div id="trackingDetails" class="details" style="display:none"></div>
+
+  <div class="map-container">
+   <div class="map-heading">
+    <h3>🗺️ Selected Bus Route</h3>
+    <span>Town Bus Route Map</span>
+   </div>
+
+   <svg id="routeMap" viewBox="0 0 900 480" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+     <pattern id="grass" width="28" height="28" patternUnits="userSpaceOnUse">
+      <rect width="28" height="28" fill="#dcebd3"/>
+      <circle cx="5" cy="7" r="1.2" fill="#bfd8b5"/>
+      <circle cx="21" cy="20" r="1" fill="#c7dfbd"/>
+     </pattern>
+
+     <pattern id="roadTexture" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#454b52"/>
+      <circle cx="4" cy="5" r=".6" fill="#596168"/>
+      <circle cx="15" cy="14" r=".5" fill="#596168"/>
+     </pattern>
+
+     <filter id="buildingShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="1" dy="3" stdDeviation="2" flood-color="#34495e" flood-opacity=".22"/>
+     </filter>
+    </defs>
+
+    <rect width="900" height="480" rx="10" fill="url(#grass)"/>
+
+    <!-- TREES -->
+    <g fill="#6b9b59">
+     <circle cx="30" cy="25" r="10"/><circle cx="875" cy="25" r="10"/>
+     <circle cx="30" cy="370" r="10"/><circle cx="875" cy="370" r="10"/>
+     <circle cx="350" cy="335" r="9"/><circle cx="585" cy="30" r="9"/>
+     <circle cx="580" cy="420" r="9"/><circle cx="350" cy="420" r="9"/>
+    </g>
+
+    <!-- ROADS: sidewalks are drawn first, then asphalt -->
+    <g fill="none" stroke-linecap="butt" stroke-linejoin="round">
+     <!-- Sidewalks -->
+     <g stroke="#b7b9b8" stroke-width="66">
+      <path d="M-10 135H910"/>
+      <path d="M-10 300H910"/>
+      <path d="M155 -10V430"/>
+      <path d="M390 -10V430"/>
+      <path d="M625 -10V430"/>
+      <path d="M820 -10V430"/>
+      <path d="M820 390H780V425"/>
+     </g>
+
+     <!-- Asphalt surfaces -->
+     <g stroke="url(#roadTexture)" stroke-width="54">
+      <path d="M-10 135H910"/>
+      <path d="M-10 300H910"/>
+      <path d="M155 -10V430"/>
+      <path d="M390 -10V430"/>
+      <path d="M625 -10V430"/>
+      <path d="M820 -10V430"/>
+      <path d="M820 390H780V425"/>
+     </g>
+
+     <!-- Fill junction centres with asphalt so crossings join cleanly -->
+     <g fill="#454b52" stroke="#b7b9b8" stroke-width="3">
+      <rect x="128" y="108" width="54" height="54"/>
+      <rect x="363" y="108" width="54" height="54"/>
+      <rect x="598" y="108" width="54" height="54"/>
+      <rect x="793" y="108" width="54" height="54"/>
+      <rect x="128" y="273" width="54" height="54"/>
+      <rect x="363" y="273" width="54" height="54"/>
+      <rect x="598" y="273" width="54" height="54"/>
+      <rect x="793" y="273" width="54" height="54"/>
+     </g>
+
+     <!-- Road boundary markings -->
+     <g stroke="#ffffff" stroke-width="2" opacity=".9">
+      <path d="M-10 109H910 M-10 161H910"/>
+      <path d="M-10 274H910 M-10 326H910"/>
+      <path d="M129 -10V430 M181 -10V430"/>
+      <path d="M364 -10V430 M416 -10V430"/>
+      <path d="M599 -10V430 M651 -10V430"/>
+      <path d="M794 -10V430 M846 -10V430"/>
+      <path d="M793 363H847 M753 398V430"/>
+     </g>
+
+     <!-- Yellow dashed centre lines -->
+     <g stroke="#f6d365" stroke-width="2.5" stroke-dasharray="16 13">
+      <path d="M-10 135H910"/>
+      <path d="M-10 300H910"/>
+      <path d="M155 -10V430"/>
+      <path d="M390 -10V430"/>
+      <path d="M625 -10V430"/>
+      <path d="M820 -10V365"/>
+     </g>
+
+     <!-- Campus approach: a connected road ending at the entrance -->
+     <path d="M820 390H780V425" stroke="#ffffff" stroke-width="2"/>
+     <path d="M820 390H780V425" stroke="#454b52" stroke-width="50"/>
+     <path d="M820 390H780V425" stroke="#f6d365" stroke-width="2.5" stroke-dasharray="10 8"/>
+    </g>
+
+    <!-- CROSSINGS -->
+    <g fill="#ffffff" opacity=".9">
+     <g transform="translate(155 135)">
+      <rect x="-26" y="-35" width="6" height="20"/>
+      <rect x="-16" y="-35" width="6" height="20"/>
+      <rect x="-6" y="-35" width="6" height="20"/>
+      <rect x="4" y="-35" width="6" height="20"/>
+      <rect x="14" y="-35" width="6" height="20"/>
+     </g>
+     <g transform="translate(390 300)">
+      <rect x="-26" y="-35" width="6" height="20"/>
+      <rect x="-16" y="-35" width="6" height="20"/>
+      <rect x="-6" y="-35" width="6" height="20"/>
+      <rect x="4" y="-35" width="6" height="20"/>
+      <rect x="14" y="-35" width="6" height="20"/>
+     </g>
+     <g transform="translate(625 135)">
+      <rect x="-26" y="-35" width="6" height="20"/>
+      <rect x="-16" y="-35" width="6" height="20"/>
+      <rect x="-6" y="-35" width="6" height="20"/>
+      <rect x="4" y="-35" width="6" height="20"/>
+      <rect x="14" y="-35" width="6" height="20"/>
+     </g>
+     <g transform="translate(820 300)">
+      <rect x="-26" y="-35" width="6" height="20"/>
+      <rect x="-16" y="-35" width="6" height="20"/>
+      <rect x="-6" y="-35" width="6" height="20"/>
+      <rect x="4" y="-35" width="6" height="20"/>
+      <rect x="14" y="-35" width="6" height="20"/>
+     </g>
+    </g>
+
+    <!-- BUILDINGS -->
+    <g filter="url(#buildingShadow)" stroke-width="1.5">
+     <g transform="translate(25 24)">
+      <rect width="92" height="70" rx="5" fill="#f1c6a7" stroke="#b88b6d"/>
+      <path d="M0 13L46 -2L92 13" fill="#bd8060" stroke="#98664d" stroke-width="2"/>
+      <rect x="10" y="18" width="20" height="17" fill="#83bbd4" stroke="#fff"/>
+      <rect x="61" y="18" width="20" height="17" fill="#83bbd4" stroke="#fff"/>
+      <rect x="37" y="40" width="18" height="30" fill="#98664d"/>
+      <text x="46" y="59" text-anchor="middle" font-size="10" fill="#fff" stroke="none">HOME</text>
+     </g>
+
+     <g transform="translate(200 22)">
+      <rect width="145" height="72" rx="4" fill="#c8d9ed" stroke="#829dbb"/>
+      <rect x="8" y="8" width="129" height="7" fill="#829dbb" stroke="none"/>
+      <rect x="10" y="21" width="23" height="18" fill="#83bbd4"/>
+      <rect x="48" y="21" width="23" height="18" fill="#83bbd4"/>
+      <rect x="86" y="21" width="23" height="18" fill="#83bbd4"/>
+      <text x="72" y="57" text-anchor="middle" font-size="12" fill="#17202a" stroke="none">Apartments</text>
+     </g>
+
+     <g transform="translate(435 22)">
+      <rect width="145" height="72" rx="4" fill="#e4c8e8" stroke="#a17ba7"/>
+      <rect x="10" y="9" width="125" height="7" fill="#a17ba7" stroke="none"/>
+      <text x="72" y="39" text-anchor="middle" font-size="22" stroke="none">✚</text>
+      <text x="72" y="58" text-anchor="middle" font-size="12" fill="#17202a" stroke="none">Hospital</text>
+     </g>
+
+     <g transform="translate(675 22)">
+      <rect width="185" height="72" rx="4" fill="#b9d9ac" stroke="#779c68"/>
+      <circle cx="30" cy="27" r="13" fill="#6b9b59" stroke="none"/>
+      <circle cx="65" cy="25" r="15" fill="#80b56b" stroke="none"/>
+      <circle cx="100" cy="28" r="12" fill="#6b9b59" stroke="none"/>
+      <text x="92" y="58" text-anchor="middle" font-size="12" fill="#17202a" stroke="none">Public Park</text>
+     </g>
+
+     <g transform="translate(25 190)">
+      <rect width="92" height="70" rx="4" fill="#f5d6a8" stroke="#b99a65"/>
+      <path d="M0 12L46 0L92 12" fill="#c99b63" stroke="#b99a65"/>
+      <rect x="8" y="18" width="76" height="30" fill="#fff0c9" stroke="#c99b65"/>
+      <text x="46" y="38" text-anchor="middle" font-size="12" fill="#795548" stroke="none">STORE</text>
+      <rect x="37" y="50" width="18" height="20" fill="#98664d"/>
+     </g>
+
+     <g transform="translate(200 190)">
+      <rect width="145" height="70" rx="4" fill="#c9dced" stroke="#7e9fb8"/>
+      <rect x="10" y="10" width="125" height="6" fill="#7e9fb8" stroke="none"/>
+      <rect x="15" y="24" width="25" height="18" fill="#83bbd4"/>
+      <rect x="58" y="24" width="25" height="18" fill="#83bbd4"/>
+      <rect x="101" y="24" width="25" height="18" fill="#83bbd4"/>
+      <text x="72" y="58" text-anchor="middle" font-size="12" fill="#17202a" stroke="none">Office</text>
+     </g>
+
+     <g transform="translate(435 190)">
+      <rect width="145" height="70" rx="4" fill="#f1d0d0" stroke="#b77979"/>
+      <rect x="8" y="8" width="129" height="8" fill="#b77979" stroke="none"/>
+      <rect x="12" y="23" width="121" height="26" fill="#fff1f1" stroke="#b77979"/>
+      <text x="72" y="40" text-anchor="middle" font-size="12" fill="#873d3d" stroke="none">SHOPPING</text>
+      <text x="72" y="61" text-anchor="middle" font-size="10" fill="#17202a" stroke="none">Centre</text>
+     </g>
+
+     <g transform="translate(675 190)">
+      <rect width="185" height="70" rx="4" fill="#f3c6a6" stroke="#ae8060"/>
+      <path d="M0 15L92 0L185 15" fill="#bd8060" stroke="#ae8060"/>
+      <rect x="12" y="21" width="28" height="18" fill="#83bbd4"/>
+      <rect x="51" y="21" width="28" height="18" fill="#83bbd4"/>
+      <rect x="90" y="21" width="28" height="18" fill="#83bbd4"/>
+      <text x="92" y="57" text-anchor="middle" font-size="12" fill="#17202a" stroke="none">Residential Area</text>
+     </g>
+
+     <g transform="translate(25 355)">
+      <rect width="92" height="48" rx="4" fill="#d5c1e8" stroke="#8e75aa"/>
+      <rect x="7" y="7" width="78" height="12" fill="#b19acb" stroke="none"/>
+      <text x="46" y="36" text-anchor="middle" font-size="12" fill="#17202a" stroke="none">Shops</text>
+     </g>
+
+     <g transform="translate(200 355)">
+      <rect width="145" height="48" rx="4" fill="#f1c6a7" stroke="#b88b6d"/>
+      <rect x="8" y="7" width="129" height="9" fill="#bd8060" stroke="none"/>
+      <text x="72" y="34" text-anchor="middle" font-size="12" fill="#17202a" stroke="none">Houses</text>
+     </g>
+
+     <g transform="translate(435 355)">
+      <rect width="145" height="48" rx="4" fill="#c8d9ed" stroke="#829dbb"/>
+      <rect x="8" y="7" width="129" height="9" fill="#829dbb" stroke="none"/>
+      <text x="72" y="34" text-anchor="middle" font-size="12" fill="#17202a" stroke="none">Buildings</text>
+     </g>
+
+     <g transform="translate(675 355)">
+      <rect width="185" height="48" rx="4" fill="#f5d6a8" stroke="#b99a65"/>
+      <rect x="8" y="7" width="169" height="9" fill="#c99b63" stroke="none"/>
+      <text x="92" y="34" text-anchor="middle" font-size="12" fill="#17202a" stroke="none">Local Shops</text>
+     </g>
+    </g>
+
+    <!-- BUS STOP SHELTERS -->
+    <g>
+     <g transform="translate(110 173)">
+      <rect width="24" height="17" rx="2" fill="#21618c" stroke="#fff" stroke-width="1.5"/>
+      <path d="M-2 0L12 -8L26 0" fill="#f5b041" stroke="#21618c" stroke-width="1.5"/>
+      <text x="12" y="12" text-anchor="middle" font-size="9" fill="#fff">BUS</text>
+     </g>
+     <g transform="translate(577 338)">
+      <rect width="24" height="17" rx="2" fill="#21618c" stroke="#fff" stroke-width="1.5"/>
+      <path d="M-2 0L12 -8L26 0" fill="#f5b041" stroke="#21618c" stroke-width="1.5"/>
+      <text x="12" y="12" text-anchor="middle" font-size="9" fill="#fff">BUS</text>
+     </g>
+    </g>
+
+    <!-- DYNAMIC ROUTE AND BUS -->
+    <g id="routeLayer"></g>
+    <g id="busMarker" style="display:none">
+     <circle r="17" fill="#f9e79f" stroke="#9a6b12" stroke-width="2"/>
+     <text x="0" y="6" text-anchor="middle" font-size="21">🚌</text>
+    </g>
+
+    <!-- COLLEGE ENTRANCE -->
+    <g id="collegeBuilding">
+     <rect x="700" y="416" width="160" height="50" rx="5" fill="#174a2c" stroke="#0b321b" stroke-width="2"/>
+     <rect x="711" y="422" width="138" height="7" fill="#82b875"/>
+     <text x="780" y="444" text-anchor="middle" font-size="13" font-weight="bold" fill="#fff">🏫 COLLEGE</text>
+     <text x="780" y="457" text-anchor="middle" font-size="10" fill="#fff">Final Destination</text>
+    </g>
+   </svg>
+
+   <div class="legend">
+    <span>🚌 Bus</span><span>🛣️ Road</span><span>🚏 Bus Stop</span>
+    <span>🏥 Hospital</span><span>🌳 Park</span><span>🏫 College</span>
+   </div>
+  </div>
+
+  <div class="actions">
+   <button class="button" id="startTracking">▶ Start Tracking</button>
+   <button class="button red" id="stopTracking">⏸ Pause</button>
+   <button class="button gray" id="resetTracking">↻ Reset</button>
+  </div>
+
+  <div id="trackingStatus" class="status">Select a bus to begin</div>
+  <p id="trackingMessage">Select a bus to display its route.</p>
+  <p class="note">This is a simulated map, not live GPS. Road layout is illustrative.</p>
+ </div>
+</section>
+</main>
+
+<footer>Student Bus Tracking System | College Transportation</footer>
+
+<script>
+"use strict";
+
+const busRoutes = [
+{bus:"1",time:"8:10 AM",start:"Neivasal",stops:"Neivasal - Sadayar Kovil - Vandayar Iruppu - PR College - Kela Vasthachavadi - Tholkappiyar Square - Kallukulam - Anna Nagar - EB Colony - Nanikottai Bypass - Mappillainayakkanpatti - Ramasamy College"},
+{bus:"3",time:"7:30 AM",start:"Pappanadu",stops:"Pappanadu - Paluvankadu - Oratharanadukadu - Kurumantheru - Ullur - Soorakottai - Keela Vastha Chavadi - Bypass - College"},
+{bus:"4",time:"7:45 AM",start:"Mannargudi",stops:"Mannargudi - Edamalaiyur - Vadavur - Vandayar Iruppu - Keelavasthachavady - Bypass - College"},
+{bus:"5",time:"8:15 AM",start:"Rajappa Nagar",stops:"Rajappa Nagar - LIC Colony - Eswari Nagar - Medical College - Sundaram Paints - Pillar Patti - Periar College - Min Nagar - Naal Road - College"},
+{bus:"6",time:"7:15 AM",start:"Kumbakonam",stops:"Kumbakonam - Diamond - Uchipillaiyar Kovil - Thaluka PS - Darasuram - Mulaiyur - Pattathevan - Govindangudi - Nallur Bypass - Melattur - Annapannapettai - Thittal Bypass - College"},
+{bus:"N1",time:"8:00 AM",start:"Poondi",stops:"Poondi - Kovilor - Mahamman Kovil - Gnanam Nagar - Gauridayal Sharma - Ramanathan - Rohini - MR Hospital - RR Nagar - Reliance Big Bazaar - College"},
+{bus:"9",time:"7:45 AM",start:"Thirumanur",stops:"Thirumanur - Vilangudi - Thiruvaiyaru - Kandiyur - Ammanpettai - Bypass - College"},
+{bus:"Q-9",time:"7:45 AM",start:"Karambagudi",stops:"Karambagudi - Suranveduthi - Sevaipatti - Nalroad - Regunathapuram - Nadupatti - Nayakarapatti - Mudhukulam - College"},
+{bus:"11",time:"7:45 AM",start:"Pudukkottai",stops:"Pudukkottai - Ichadi - Perungalur - Adhanakkottai - Gandharvakottai - College"},
+{bus:"14",time:"7:40 AM",start:"Pattukkottai",stops:"Pattukkottai - Sanjay Nagar - Karambhavam - Papanadu - Vallam Road - Naal Road - College"},
+{bus:"15",time:"7:40 AM",start:"Aladukku Mulai",stops:"Aladukku Mulai - Enathi - Uranipuram - Thiruvonam - Mattangal - Gandharvakottai - College"},
+{bus:"16",time:"7:55 AM",start:"Thirukkattupalli",stops:"Thirukkattupalli - Budalur - Puthupatti - Arch - Vallam - Naal Road - College"},
+{bus:"17",time:"8:00 AM",start:"Ammapet",stops:"Ammapet - Saliyamangalam - Villar Road - Bypass - College"},
+{bus:"18",time:"7:30 AM",start:"Uttani",stops:"Uttani - SP Kovil - Umayalpuram - Kabistalam - Papanasam - Mela Semmangudi - Thirukarukavur - Kalanchetry - Best School - Bypass - College"},
+{bus:"2",time:"7:30 AM",start:"1001 Sivan Kovil",stops:"1001 Sivan Kovil - Ayyampettai - Nedar - Bypass - College"},
+{bus:"Van-B",time:"7:45 AM",start:"Naduvakkottai",stops:"Naduvakkottai - Thekkur-Sellampatti - Palam-Vadakkur - Ezhankottai - Marunkulam - Suriyampatti - PITS College - Arputhapuram - College"},
+{bus:"Van-A",time:"7:45 AM",start:"Pudugudi",stops:"Pudugudi - Sengipatti - Min Nagar - Naal Road - Tethuvavasapatti - College"},
+{bus:"7",time:"8:30 AM",start:"Tholkappier Square",stops:"Tholkappier Square - Vandikara Street - Marys Corner - Infant Jesus Church - Madhakottai - College"},
+{bus:"N3",time:"8:00 AM",start:"Srinivasapuram",stops:"Srinivasapuram - Old Bus Stand - Membalam - Ramanathan Hospital - Kaveri Nagar - New Bus Stand - College"},
+{bus:"N4",time:"8:00 AM",start:"Keelavasal",stops:"Keelavasal - Old Bus Stand - Cholan Selai - Rajappa Nagar - Balajinagar - Municipal Colony - New Bus Stand - College"},
+{bus:"N2",time:"7:45 AM",start:"Kandiyur",stops:"Kandiyur - Ammanpettai - Pallia Agraharam - Karanthai - Keela Vasthachavady - Old Bus Stand - Railway Station - New Bus Stand - Melavasthachavady - College"}
+];
+
+const $=id=>document.getElementById(id);
+const NS="http://www.w3.org/2000/svg";
+
+function svg(tag,attrs={},text=""){
+ const e=document.createElementNS(NS,tag);
+ Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));
+ if(text!==undefined)e.textContent=text;
+ return e;
+}
+
+function showPage(id){
+ document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
+ document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.go)));
+
+function toMinutes(t){
+ const [clock,period]=t.split(" ");
+ let [h,m]=clock.split(":").map(Number);
+ if(period==="PM"&&h!==12)h+=12;
+ if(period==="AM"&&h===12)h=0;
+ return h*60+m;
+}
+
+function renderRoutes(){
+ const q=$("routeSearch").value.trim().toLowerCase(),f=$("timeFilter").value;
+ const results=busRoutes.filter(r=>{
+  const t=toMinutes(r.time);
+  return (`${r.bus} ${r.start} ${r.time} ${r.stops}`).toLowerCase().includes(q)&&
+   (f==="all"||(f==="early"&&t<465)||(f==="middle"&&t>=465&&t<=480)||(f==="late"&&t>480));
+ });
+
+ $("routeCount").textContent=`Showing ${results.length} of ${busRoutes.length} routes`;
+ const list=$("routeList");
+ list.replaceChildren();
+
+ if(!results.length){
+  const d=document.createElement("div");
+  d.className="empty";d.textContent="No routes found.";
+  list.appendChild(d);return;
+ }
+
+ results.forEach(r=>{
+  const card=document.createElement("div");card.className="route-card";
+  const top=document.createElement("div");top.className="route-top";
+  const n=document.createElement("span");n.className="bus-number";n.textContent="Bus "+r.bus;
+  const t=document.createElement("span");t.className="bus-time";t.textContent=r.time;
+  top.append(n,t);
+
+  const start=document.createElement("p");start.textContent="Starting Point: "+r.start;
+  const stopsText=document.createElement("p");stopsText.textContent="Stops: "+r.stops;
+  const btn=document.createElement("button");btn.className="button";btn.textContent="Track This Bus";
+
+  btn.addEventListener("click",()=>{
+   $("trackingBus").value=r.bus;
+   renderSelectedRoute();
+   showPage("tracking");
+  });
+
+  card.append(top,start,stopsText,btn);
+  list.appendChild(card);
+ });
+}
+
+$("routeSearch").addEventListener("input",renderRoutes);
+$("timeFilter").addEventListener("change",renderRoutes);
+
+busRoutes.forEach(r=>{
+ const o=document.createElement("option");
+ o.value=r.bus;o.textContent=`Bus ${r.bus} — ${r.start}`;
+ $("trackingBus").appendChild(o);
+});
+
+let stops=[],points=[],pathLength=0;
+let progress=0,frame=null,lastFrameTime=0,paused=true,arrived=false;
+
+/*
+ All route lines finish through the same connected campus road:
+ main road -> campus approach -> college entrance.
+*/
+const collegePoint={x:780,y:416};
+
+const routeTemplates=[
+ [[40,135],[155,135],[155,300],[390,300],[390,135],[625,135],[820,135],[820,300],[820,390],[780,390],[780,416]],
+ [[155,25],[155,135],[390,135],[390,300],[625,300],[820,300],[820,390],[780,390],[780,416]],
+ [[820,25],[820,135],[625,135],[625,300],[390,300],[390,380],[390,390],[780,390],[780,416]],
+ [[40,300],[155,300],[155,135],[390,135],[625,135],[625,300],[820,300],[820,390],[780,390],[780,416]],
+ [[155,25],[155,135],[390,135],[390,300],[625,300],[625,135],[820,135],[820,300],[820,390],[780,390],[780,416]],
+ [[820,25],[820,135],[625,135],[625,300],[390,300],[390,135],[155,135],[155,300],[390,300],[390,390],[780,390],[780,416]],
+ [[40,135],[155,135],[390,135],[390,300],[625,300],[820,300],[820,390],[780,390],[780,416]],
+ [[40,300],[155,300],[390,300],[390,135],[625,135],[820,135],[820,300],[820,390],[780,390],[780,416]],
+ [[155,25],[155,135],[390,135],[390,300],[625,300],[780,390],[780,416]],
+ [[820,25],[820,135],[625,135],[625,300],[390,300],[390,135],[155,135],[390,135],[390,390],[780,390],[780,416]],
+ [[40,135],[155,135],[155,300],[390,300],[625,300],[820,300],[820,390],[780,390],[780,416]],
+ [[155,25],[155,135],[390,135],[390,300],[625,300],[820,300],[820,390],[780,390],[780,416]],
+ [[40,300],[155,300],[155,135],[390,135],[625,135],[820,135],[820,300],[820,390],[780,390],[780,416]],
+ [[820,25],[820,135],[625,135],[625,300],[390,300],[390,135],[155,135],[155,300],[390,300],[390,390],[780,390],[780,416]],
+ [[820,25],[820,135],[625,135],[390,135],[390,300],[155,300],[390,300],[390,390],[780,390],[780,416]],
+ [[40,135],[155,135],[390,135],[390,300],[625,300],[625,135],[820,135],[820,390],[780,390],[780,416]],
+ [[820,300],[625,300],[625,135],[390,135],[390,300],[155,300],[390,300],[390,390],[780,390],[780,416]],
+ [[155,25],[155,135],[390,135],[625,135],[625,300],[820,300],[820,390],[780,390],[780,416]],
+ [[820,25],[820,135],[625,135],[390,135],[390,300],[155,300],[390,300],[390,390],[780,390],[780,416]],
+ [[40,300],[155,300],[155,135],[390,135],[625,135],[820,135],[820,300],[820,390],[780,390],[780,416]],
+ [[820,300],[625,300],[625,135],[390,135],[390,300],[155,300],[390,300],[390,390],[780,390],[780,416]]
+];
+
+function stopAnimation(){
+ if(frame!==null){cancelAnimationFrame(frame);frame=null;}
+ paused=true;
+}
+
+function resetMovementState(){
+ stopAnimation();
+ progress=0;lastFrameTime=0;arrived=false;
+ $("busMarker").style.display="none";
+}
+
+/* Create stop positions along the route, with the last point at the college entrance. */
+function makePoints(routeIndex,count){
+ const raw=routeTemplates[routeIndex%routeTemplates.length].map(p=>({x:p[0],y:p[1]}));
+ const cumulative=[0];
+ let total=0;
+
+ for(let i=1;i<raw.length;i++){
+  total+=Math.hypot(raw[i].x-raw[i-1].x,raw[i].y-raw[i-1].y);
+  cumulative.push(total);
+ }
+
+ const result=[];
+ for(let i=0;i<count;i++){
+  const target=count===1?total:total*i/(count-1);
+  let j=1;
+  while(j<cumulative.length-1&&cumulative[j]<target)j++;
+
+  const a=raw[j-1],b=raw[j];
+  const len=cumulative[j]-cumulative[j-1];
+  const f=len?((target-cumulative[j-1])/len):0;
+
+  result.push({
+   x:a.x+(b.x-a.x)*f,
+   y:a.y+(b.y-a.y)*f
+  });
+ }
+
+ result[result.length-1]={x:collegePoint.x,y:collegePoint.y};
+ return {points:result,raw};
+}
+
+function addStopLabel(layer,name,index,p,last,total){
+ const g=svg("g");
+
+ g.appendChild(svg("circle",{
+  cx:p.x,cy:p.y,r:last?13:10,
+  fill:last?"#d5f5e3":"#fff",
+  stroke:last?"#196f3d":"#2471a3",
+  "stroke-width":2.5
+ }));
+
+ g.appendChild(svg("text",{
+  x:p.x,y:p.y+4,"text-anchor":"middle",
+  "font-size":last?10:9,"font-weight":"bold",
+  fill:"#123c69"
+ },last?"C":String(index+1)));
+
+ const labelY=p.y+23;
+ const label=svg("text",{
+  x:p.x,y:labelY,"text-anchor":"middle",
+  "font-size":Math.max(8,Math.min(10,100/total)),
+  "font-weight":"bold",fill:"#17202a",
+  stroke:"#fff","stroke-width":2.5,"paint-order":"stroke"
+ });
+
+ const words=name.split(/\s+/);
+ let lines=[],line="";
+
+ words.forEach(w=>{
+  if((line+" "+w).trim().length>13&&line){lines.push(line);line=w;}
+  else line=(line+" "+w).trim();
+ });
+ if(line)lines.push(line);
+
+ lines.forEach((s,i)=>label.appendChild(svg("tspan",{x:p.x,dy:i===0?0:10},s)));
+ g.appendChild(label);
+ layer.appendChild(g);
+}
+
+function renderSelectedRoute(){
+ resetMovementState();
+ stops=[];
+ points=[];
+ $("routeLayer").replaceChildren();
+
+ const route=busRoutes.find(r=>r.bus===$("trackingBus").value);
+
+ if(!route){
+  $("trackingDetails").style.display="none";
+  $("trackingStatus").textContent="Select a bus to begin";
+  $("trackingMessage").textContent="Choose a bus to display its route.";
+  return;
+ }
+
+ stops=route.stops.split(" - ").map(s=>s.trim()).filter(Boolean);
+ if(stops[stops.length-1].toLowerCase()!=="college")stops.push("College");
+
+ const routeIndex=busRoutes.findIndex(r=>r.bus===route.bus);
+ const routeData=makePoints(routeIndex,stops.length);
+ points=routeData.points;
+
+ const layer=$("routeLayer");
+
+ /*
+  Draw the road route following the actual road network.
+  The white border makes the route easy to see against asphalt.
+ */
+ const roadD=routeData.raw.map((p,i)=>(i?"L":"M")+p.x+" "+p.y).join(" ");
+
+ layer.appendChild(svg("path",{
+  d:roadD,fill:"none",stroke:"#ffffff","stroke-width":12,
+  "stroke-linecap":"round","stroke-linejoin":"round"
+ }));
+
+ layer.appendChild(svg("path",{
+  d:roadD,fill:"none",stroke:"#2471a3","stroke-width":5,
+  "stroke-linecap":"round","stroke-linejoin":"round"
+ }));
+
+ stops.forEach((name,i)=>{
+  addStopLabel(layer,name,i,points[i],i===stops.length-1,stops.length);
+ });
+
+ const details=$("trackingDetails");
+ details.replaceChildren();
+ details.style.display="block";
+
+ const h=document.createElement("h3");h.textContent="🚌 Bus "+route.bus+" Details";
+ const a=document.createElement("p");a.textContent="Starting Point: "+route.start;
+ const b=document.createElement("p");b.textContent="Departure Time: "+route.time;
+ const c=document.createElement("p");c.textContent="Stops: "+stops.join(" → ");
+
+ details.append(h,a,b,c);
+ $("trackingStatus").textContent="Bus "+route.bus+" route ready";
+ $("trackingMessage").textContent=stops.length+" stops shown. Start Tracking to follow the bus.";
+}
+
+function updateBusPosition(distance){
+ const marker=$("busMarker");
+ const path=$("routeLayer").querySelector("path:nth-child(2)");
+ if(!path)return;
+
+ const length=path.getTotalLength();
+ const p=path.getPointAtLength(Math.min(distance,length));
+
+ marker.setAttribute("transform",`translate(${p.x} ${p.y})`);
+ marker.style.display="inline";
+}
+
+function animateBus(timestamp){
+ if(paused||arrived)return;
+
+ if(!lastFrameTime)lastFrameTime=timestamp;
+ const dt=timestamp-lastFrameTime;
+ lastFrameTime=timestamp;
+
+ const path=$("routeLayer").querySelector("path:nth-child(2)");
+ if(!path)return;
+
+ pathLength=path.getTotalLength();
+ progress+=dt*0.012;
+ updateBusPosition(progress);
+
+ const p=path.getPointAtLength(Math.min(progress,pathLength));
+ let nearest=0,best=Infinity;
+
+ points.forEach((point,i)=>{
+  const dist=Math.hypot(point.x-p.x,point.y-p.y);
+  if(dist<best){best=dist;nearest=i;}
+ });
+
+ if(nearest<stops.length-1){
+  $("trackingStatus").textContent="🟢 Bus "+$("trackingBus").value+" is moving";
+  $("trackingMessage").textContent="Current stop: "+stops[nearest]+" | Next stop: "+stops[nearest+1];
+ }
+
+ if(progress>=pathLength){
+  progress=pathLength;
+  updateBusPosition(pathLength);
+  arrived=true;
+  paused=true;
+  frame=null;
+
+  $("trackingStatus").textContent="🏁 Reached College — Bus Stopped";
+  $("trackingMessage").textContent="Bus "+$("trackingBus").value+" reached College and has stopped at its final destination.";
+  return;
+ }
+
+ frame=requestAnimationFrame(animateBus);
+}
+
+$("trackingBus").addEventListener("change",renderSelectedRoute);
+
+$("startTracking").addEventListener("click",()=>{
+ if(!$("trackingBus").value){
+  alert("Please select a bus first.");
+  return;
+ }
+
+ if(!stops.length)renderSelectedRoute();
+
+ if(arrived){
+  $("trackingMessage").textContent="This bus has already reached College. Press Reset or select another bus to start a new simulation.";
+  return;
+ }
+
+ if(!paused&&frame!==null)return;
+
+ paused=false;
+ lastFrameTime=0;
+ frame=requestAnimationFrame(animateBus);
+});
+
+$("stopTracking").addEventListener("click",()=>{
+ if(frame!==null)cancelAnimationFrame(frame);
+ frame=null;
+ paused=true;
+
+ if(!arrived){
+  $("trackingStatus").textContent="⏸ Tracking paused";
+  $("trackingMessage").textContent="Bus paused. Press Start Tracking to continue.";
+ }
+});
+
+$("resetTracking").addEventListener("click",()=>{
+ resetMovementState();
+ stops=[];
+ points=[];
+ $("trackingBus").value="";
+ $("routeLayer").replaceChildren();
+ $("trackingDetails").style.display="none";
+ $("trackingStatus").textContent="Select a bus to begin";
+ $("trackingMessage").textContent="Choose a bus to display its route.";
+});
+
+renderRoutes();
+</script>
+</body>
+</html>

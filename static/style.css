@@ -1,0 +1,369 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --blue: #123c69;
+    --lightblue: #21618c;
+    --yellow: #f5b041;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    color: #17202a;
+    background: #e8f0e5;
+    min-height: 100vh;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(#ffffff38, #ffffff38),
+                url("college_campus.png") center/cover no-repeat;
+}
+
+header {
+    background: #102f50ed;
+    color: white;
+    padding: 15px 4%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.logo span {
+    color: var(--yellow);
+}
+
+nav {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+nav button {
+    border: 0;
+    background: transparent;
+    color: white;
+    padding: 10px 13px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+nav button.active,
+nav button:hover {
+    background: var(--yellow);
+    color: #17202a;
+}
+
+main {
+    width: 94%;
+    max-width: 1200px;
+    margin: 22px auto;
+}
+
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
+.glass {
+    background: #ffffffdf;
+    backdrop-filter: blur(6px);
+    border: 1px solid #ffffffb8;
+    border-radius: 14px;
+    padding: 23px;
+    box-shadow: 0 5px 20px #0002;
+    margin-bottom: 20px;
+}
+
+.hero {
+    min-height: 270px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+h1 {
+    font-size: clamp(29px, 4vw, 44px);
+    color: var(--blue);
+    margin-bottom: 14px;
+}
+
+h2,
+h3 {
+    color: var(--blue);
+    margin-bottom: 12px;
+}
+
+p {
+    line-height: 1.65;
+}
+
+.hero p {
+    font-size: 17px;
+    max-width: 730px;
+    margin-bottom: 18px;
+}
+
+.button {
+    padding: 11px 16px;
+    border: 0;
+    border-radius: 7px;
+    background: var(--blue);
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.button:hover {
+    background: var(--lightblue);
+}
+
+.button.yellow {
+    background: #b9770e;
+}
+
+.button.gray {
+    background: #566573;
+}
+
+.button.red {
+    background: #c0392b;
+}
+
+.actions {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.card {
+    background: #ffffffed;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px #0002;
+}
+
+.card .icon {
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.card .button {
+    margin-top: 14px;
+}
+
+.search-area {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+    margin: 18px 0;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #aab7b8;
+    border-radius: 8px;
+    background: white;
+    font-size: 15px;
+}
+
+.route-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.route-card {
+    background: #ffffffed;
+    border-left: 5px solid var(--lightblue);
+    padding: 17px;
+    border-radius: 10px;
+    overflow-wrap: anywhere;
+}
+
+.route-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.bus-number {
+    background: var(--blue);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.bus-time {
+    background: #fcf3cf;
+    color: #7d5700;
+    padding: 6px 9px;
+    border-radius: 6px;
+}
+
+.route-card p {
+    margin: 8px 0;
+}
+
+.route-card .button {
+    margin-top: 8px;
+}
+
+.empty {
+    text-align: center;
+    padding: 25px;
+    background: white;
+    border-radius: 10px;
+    grid-column: 1 / -1;
+}
+
+.tracking-select {
+    max-width: 500px;
+    margin: 18px 0;
+    text-align: left;
+}
+
+.tracking-select label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 7px;
+}
+
+.details {
+    background: #ffffffed;
+    padding: 15px;
+    border-radius: 9px;
+    margin: 14px 0;
+    overflow-wrap: anywhere;
+}
+
+.details p {
+    margin: 7px 0;
+}
+
+.map-container {
+    background: #e5efdf;
+    border: 2px solid white;
+    border-radius: 14px;
+    padding: 12px;
+    margin: 16px 0;
+    overflow: hidden;
+    box-shadow: 0 5px 18px #17351d20;
+}
+
+.map-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 3px 5px 10px;
+}
+
+.map-heading h3 {
+    font-size: 17px;
+    margin: 0;
+}
+
+.map-heading span {
+    font-size: 12px;
+    color: #34495e;
+}
+
+#routeMap {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 9px;
+}
+
+.legend {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+.status {
+    display: inline-block;
+    background: #d5f5e3;
+    color: #196f3d;
+    padding: 8px 13px;
+    border-radius: 18px;
+    font-weight: bold;
+    margin: 8px 0;
+}
+
+#trackingMessage {
+    margin: 8px 0 12px;
+}
+
+.note {
+    font-size: 12px;
+    color: #34495e;
+    margin-top: 12px;
+}
+
+footer {
+    text-align: center;
+    padding: 18px;
+    background: #102f50ed;
+    color: white;
+    margin-top: 28px;
+}
+
+@media (max-width: 700px) {
+    header {
+        justify-content: center;
+        text-align: center;
+    }
+
+    nav {
+        justify-content: center;
+    }
+
+    .cards,
+    .route-list,
+    .search-area {
+        grid-template-columns: 1fr;
+    }
+
+    main {
+        width: 96%;
+        margin-top: 12px;
+    }
+
+    .glass {
+        padding: 16px;
+    }
+}
